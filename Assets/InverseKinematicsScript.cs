@@ -55,14 +55,13 @@ public class InverseKinematicsScript : MonoBehaviour
             return;
         }
 
-
         float angle = Vector3.Angle(limbTransforms[limbTransforms.Count - 1].position, target.position);
         float angleRad = Mathf.Deg2Rad * angle;
 
         Quaternion lookRotation = Quaternion.LookRotation(target.position - limbTransforms[limbTransforms.Count - 1].position);
 
-        limb.parent.rotation = Quaternion.Slerp(
-            limb.parent.rotation,
+        limb.root.rotation = Quaternion.Slerp(
+            limb.root.rotation,
             lookRotation,
             speed * Time.deltaTime
         );
