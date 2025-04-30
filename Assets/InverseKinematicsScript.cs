@@ -10,6 +10,8 @@ public class InverseKinematicsScript : MonoBehaviour
     public float speed;
     List<Transform> limbTransforms = new List<Transform>();
 
+    float defaultDistance;
+
     void Start()
     {
         GetLimbTransforms();
@@ -17,18 +19,19 @@ public class InverseKinematicsScript : MonoBehaviour
         {
             Debug.Log(currTransform);
         }
+        defaultDistance = Vector3.Distance(limbTransforms[0].position, limbTransforms[limbTransforms.Count - 1].position);
+
+
     }
 
     void Update()
     {
         // if (distance between hand and limb is lower than distance between hand and limb + hand and target
-        Debug.Log(Vector3.Distance(limbTransforms[0].position, limbTransforms[limbTransforms.Count - 1].position) < 
-            Vector3.Distance(limbTransforms[limbTransforms.Count - 1].position, target.position));
+        Debug.Log(defaultDistance < Vector3.Distance(limbTransforms[limbTransforms.Count - 1].position, target.position));
 
         Debug.Log(limbTransforms[limbTransforms.Count - 1].gameObject.name);
         Debug.Log(limbTransforms[0].gameObject.name);
-        if (Vector3.Distance(limbTransforms[0].position, limbTransforms[limbTransforms.Count - 1].position) <
-            Vector3.Distance(limbTransforms[limbTransforms.Count - 1].position, target.position))
+        if (defaultDistance < Vector3.Distance(limbTransforms[limbTransforms.Count - 1].position, target.position))
         {
             SetLimbOuterPosition();
         }
@@ -64,7 +67,12 @@ public class InverseKinematicsScript : MonoBehaviour
         float angle = Vector3.Angle(limbTransforms[limbTransforms.Count - 1].position, target.position);
         float angleRad = Mathf.Deg2Rad * angle;
 
-        Quaternion rotation = Quaternion.Slerp(limbTransforms[limbTransforms.Count - 1].rotation, target.rotation, speed * Time.deltaTime);
-        limbTransforms[limbTransforms.Count - 1].rotation = rotation;
+        Quaternion lookRotation = Quaternion.LookRotation(target.position - limbTransforms[limbTransforms.Count - 1].position);
+
+        limbTransforms[limbTransforms.Count - 1].rotation = Quaternion.Slerp(
+            limbTransforms[limbTransforms.Count - 1].rotation,
+            lookRotation,
+            speed * Time.deltaTime
+        );
     }
 }
