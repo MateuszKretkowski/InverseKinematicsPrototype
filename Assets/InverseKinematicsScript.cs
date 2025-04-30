@@ -8,7 +8,7 @@ public class InverseKinematicsScript : MonoBehaviour
     public Transform target;
     public int depthReach;
     public float speed;
-    List<Transform> limbTransforms = new List<Transform>();
+    public List<Transform> limbTransforms = new List<Transform>();
 
     float defaultDistance;
 
@@ -19,9 +19,7 @@ public class InverseKinematicsScript : MonoBehaviour
         {
             Debug.Log(currTransform);
         }
-        defaultDistance = Vector3.Distance(limbTransforms[0].position, limbTransforms[limbTransforms.Count - 1].position);
-
-
+        defaultDistance = Vector3.Distance(limbTransforms[0].GetChild(0).position, limbTransforms[limbTransforms.Count - 1].position);
     }
 
     void Update()
@@ -29,8 +27,6 @@ public class InverseKinematicsScript : MonoBehaviour
         // if (distance between hand and limb is lower than distance between hand and limb + hand and target
         Debug.Log(defaultDistance < Vector3.Distance(limbTransforms[limbTransforms.Count - 1].position, target.position));
 
-        Debug.Log(limbTransforms[limbTransforms.Count - 1].gameObject.name);
-        Debug.Log(limbTransforms[0].gameObject.name);
         if (defaultDistance < Vector3.Distance(limbTransforms[limbTransforms.Count - 1].position, target.position))
         {
             SetLimbOuterPosition();
@@ -45,12 +41,9 @@ public class InverseKinematicsScript : MonoBehaviour
         limbTransforms.Add(limb);
         Transform currentLimb = limb;
 
-        int i = 0;
-        while (currentLimb != limb.root || i == depthReach)
+        for (int i=limb.root.childCount-1; i>=0; i--)
         {
-            limbTransforms.Add(currentLimb);
-            currentLimb = currentLimb.parent;
-            i++;
+            limbTransforms.Add(limb.parent.GetChild(i));
         }
     }
 
@@ -62,15 +55,14 @@ public class InverseKinematicsScript : MonoBehaviour
             return;
         }
 
-        Debug.Log("Setting Limb Outer Position");
 
         float angle = Vector3.Angle(limbTransforms[limbTransforms.Count - 1].position, target.position);
         float angleRad = Mathf.Deg2Rad * angle;
 
         Quaternion lookRotation = Quaternion.LookRotation(target.position - limbTransforms[limbTransforms.Count - 1].position);
 
-        limbTransforms[limbTransforms.Count - 1].rotation = Quaternion.Slerp(
-            limbTransforms[limbTransforms.Count - 1].rotation,
+        limb.parent.rotation = Quaternion.Slerp(
+            limb.parent.rotation,
             lookRotation,
             speed * Time.deltaTime
         );
